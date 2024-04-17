@@ -1,5 +1,6 @@
 import {IResolvers} from "@graphql-tools/utils";
 import data from '../../data/data.json'
+import {Db} from "mongodb";
 
 export const characterResolver: IResolvers = {
     Query: {
@@ -10,16 +11,23 @@ export const characterResolver: IResolvers = {
             const [found] = data.characters.filter(ch => ch._id === args._id)
             return found
         },
-        getCharacters() {
-            return data.characters
+        async getCharacters(root: void, args: void, context: Db) {
+            try {
+                return await context.collection('characters').find().toArray()
+            } catch (error) {
+                console.log(error)
+            }
         }
     },
 
     Mutation: {
-        createCharacter(root: void, args: any) {
-            args.character._id = `${data.characters.length + 1}`
-            data.characters.push(args.character)
-            return 'Character added successfully'
+        async createCharacter(root: void, args: any, context: Db) {
+            try {
+                await context.collection('characters').insertOne(args.character)
+                return 'Character added successfully'
+            } catch (error) {
+                console.log(error)
+            }
         }
     },
 

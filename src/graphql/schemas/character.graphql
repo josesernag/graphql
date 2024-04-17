@@ -14,6 +14,7 @@ type Character {
     race: Race
     gender: Gender
     games: [Game]
+    image: String
 }
 
 enum Race {
@@ -32,4 +33,5 @@ input NewCharacterInput {
     race: Race
     gender: Gender
     games: [String!]!
+    image: String!
 }
