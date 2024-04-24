@@ -21,6 +21,7 @@ enum Race {
     HYLIAN
     GERUDO
     FAIRY
+    HUMAN
 }
 
 enum Gender {
