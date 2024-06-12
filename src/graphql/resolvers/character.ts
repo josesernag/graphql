@@ -1,6 +1,7 @@
 import {IResolvers} from "@graphql-tools/utils";
 import data from '../../data/data.json'
-import {Db} from "mongodb";
+import {Db, ObjectId} from "mongodb";
+import {CHARACTERS_COLLECTION, GAMES_COLLECTION} from '../../mongo/collections'
 
 export const characterResolver: IResolvers = {
     Query: {
@@ -23,8 +24,27 @@ export const characterResolver: IResolvers = {
     Mutation: {
         async createCharacter(root: void, args: any, context: Db) {
             try {
-                await context.collection('characters').insertOne(args.character)
+                await context.collection(CHARACTERS_COLLECTION)
+                    .insertOne(args.character)
                 return 'Character added successfully'
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async editCharacter(root: void, args: any, context: Db) {
+            try {
+                const exists = await context.collection(CHARACTERS_COLLECTION)
+                    .findOne({ _id: new ObjectId(args._id) })
+
+                if(exists){
+                    await context.collection(CHARACTERS_COLLECTION)
+                        .updateOne(
+                            { _id: new ObjectId(args._id)},
+                            { $set: args.character }
+                        )
+
+                        return 'Character Updated'
+                }
             } catch (error) {
                 console.log(error)
             }
@@ -32,10 +52,10 @@ export const characterResolver: IResolvers = {
     },
 
     Character: {
-        games(parent: any) {
-            const gameList: Array<any> = []
-            parent.games.map((gameId: string) =>
-                gameList.push(...data.games.filter(game => game._id === gameId))
+        async games(parent: any, args: void, context: Db) {
+            const gameList = parent.games.map(async (gameId: string) =>
+                await context.collection(GAMES_COLLECTION)
+                    .findOne({_id: new ObjectId(gameId)})
             )
             return gameList
         }
